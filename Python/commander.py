@@ -13,7 +13,7 @@ import sys
 class Commander:
 	print "[*] WiFi Pineapple Commander"
 	print "[*] Looking for Commander.conf..."
-	elif os.path.exists('commander.conf'):
+	if os.path.exists('commander.conf'):
 		print "[*] Found configuration file!"
 		print " "
 		config = ConfigParser.RawConfigParser()
