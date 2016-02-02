@@ -13,16 +13,6 @@ import sys
 class Commander:
 	print "[*] WiFi Pineapple Commander"
 	print "[*] Looking for Commander.conf..."
-	if os.path.exists('/pineapple/modules/Commander/Python/commander.conf'):
-		print "[*] Found configuration file!"
-		config = ConfigParser.RawConfigParser()
-		config.read('commander.conf')
-		if config.has_section('Network') & config.has_section('Commands'):
-			print "[*] Valid configuration file... proceeding"
-			print " "
-		else:
-			print "[!] Configuration does not have Network or Command blocks."
-			sys.exit(1)
 	elif os.path.exists('commander.conf'):
 		print "[*] Found configuration file!"
 		print " "
