@@ -44,8 +44,8 @@ class Commands(Commander):
 		print "[*] Listing commands..."
 		
 		commands = Commander.config.options('Commands')
-		for i in commands:
-			print "    " + i
+		for command in commands:
+			print "    " + command
 
 		print " "
 
