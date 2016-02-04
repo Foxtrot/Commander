@@ -57,22 +57,26 @@ class Client(Commander, Commands):
 		print "    Port: " + str(port)
 		print "    Nickname: " + nickname
 		print "    Channel: " + channel
+		print " "
 
 		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		print "[*] Connecting!"
 		sock.connect((server, port))
-		print "[*] Sending Nickname"
+
+		print "[*] Sending nickname and joining " + channel
 		sock.send("NICK %s\r\n" % nickname)
-		sock.send('USER %s 8 * :%s\r\n' % (nickname, nickname))
+		sock.send("USER %s 8 * :%s\r\n" % (nickname, nickname))
 		time.sleep(5)
 		sock.send("JOIN %s\r\n" % channel)
-		sock.send("PRIVMSG %s :Commander successfully connected to %s\r\n" % (channel, server))
+		sock.send("PRIVMSG %s :Connected!")
+		print "[*] Connected!"
+		print " "
 
 		while True:
 			buff = sock.recv(2048)
-			print buff
 
 			if buff.find('PING') != -1:
+				print "[*] Replying to ping from server"
 				sock.send('PONG ' + buff.split() [1] + '\r\n')
 
 	connect()
