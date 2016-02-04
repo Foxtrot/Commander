@@ -21,11 +21,11 @@ class Commander:
 		print " "
 		config = ConfigParser.RawConfigParser()
 		config.read('commander.conf')
-		if config.has_section('Network') & config.has_section('Commands'):
+		if config.has_section('Network') & config.has_section('Commands') & config.has_section('Other'):
 			print "[*] Valid configuration file... proceeding"
 			print " "
 		else:
-			print "[!] Configuration does not have Network or Command blocks."
+			print "[!] Configuration is missing either Network, Command or Other block."
 			sys.exit(1)
 	else:
 		print "[!] Could not find configuration file! Exiting..."
@@ -68,12 +68,16 @@ class Client(Commander, Commands):
 		sock.send("USER %s 8 * :%s\r\n" % (nickname, nickname))
 		time.sleep(5)
 		sock.send("JOIN %s\r\n" % channel)
-		sock.send("PRIVMSG %s :Connected!")
+		sock.send("PRIVMSG %s :Connected!\r\n" % channel)
 		print "[*] Connected!"
 		print " "
 
 		while True:
 			buff = sock.recv(2048)
+			debugMode = Commander.config.get('Other', 'Debug')
+			if debugMode == "on":
+				print "[*] Debug mode is on! Printing buffer..."
+				print buff
 
 			if buff.find('PING') != -1:
 				print "[*] Replying to ping from server"
@@ -82,7 +86,8 @@ class Client(Commander, Commands):
 			commands = Commander.config.options('Commands')
 			for command in commands:
 				if buff.find(command) != -1:
-					print "[*] Found command %s" % command
-			
+					print "[*] Executing command %s" % command
+					sock.send("PRIVMSG %s :Executing command %s\r\n" % (channel, command))
+
 
 	connect()
