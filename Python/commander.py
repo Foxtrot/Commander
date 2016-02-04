@@ -79,4 +79,10 @@ class Client(Commander, Commands):
 				print "[*] Replying to ping from server"
 				sock.send('PONG ' + buff.split() [1] + '\r\n')
 
+			commands = Commander.config.options('Commands')
+			for command in commands:
+				if buff.find(command) != -1:
+					print "[*] Found command %s" % command
+			
+
 	connect()
