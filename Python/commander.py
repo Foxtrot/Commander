@@ -36,9 +36,11 @@ class Commands(Commander):
 	def availableCommands():
 		print "[*] Listing commands..."
 		
+		character = Commander.config.get('Other', 'Character')
+
 		commands = Commander.config.options('Commands')
 		for command in commands:
-			print "    " + command
+			print "    %s%s" % (character, command)
 
 		print " "
 
@@ -83,11 +85,14 @@ class Client(Commander, Commands):
 				print "[*] Replying to ping from server"
 				sock.send('PONG ' + buff.split() [1] + '\r\n')
 
+			character = Commander.config.get('Other', 'Character')
 			commands = Commander.config.options('Commands')
 			for command in commands:
-				if buff.find(command) != -1:
+				if buff.find(character+command) != -1:
 					print "[*] Executing command %s" % command
 					sock.send("PRIVMSG %s :Executing command %s\r\n" % (channel, command))
+					cmd = Commander.config.get('Commands', command)
+					os.system(cmd)
 
 
 	connect()
