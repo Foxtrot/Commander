@@ -35,7 +35,8 @@ class Commander extends Module
 
     private function stopCommander()
     {
-        exec('killall python');
+        $getPid = exec('pgrep -f commander');
+        exec('kill -9 $getPid');
         $this->response = array("success" => true);
     }
 
