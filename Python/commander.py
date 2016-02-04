@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 
 """
 Commander.py - Python Backend for the WiFi Pineapple Commander module.
