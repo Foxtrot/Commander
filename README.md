@@ -9,7 +9,8 @@ The Configuration file is split into 3 sections, "Network", "Commands" and "Othe
 ##Network
 This is where you define your Server, Port, Nickname and Channel for the module. You must make your configuration file comply with this format:
 
-```[Network]
+```
+[Network]
 Server: irc.example.com
 Port: 6667
 Nickname: Commander
@@ -18,14 +19,16 @@ Channel: #Commander
 
 ##Commands
 The commands block works in the same way as above, but this time you will define your commands in the syntax of "trigger: command". For example:
-```[Commands]
+```
+[Commands]
 example: mkdir /example/ && touch /example/commander
 example two: rm -rf /example/
 ```
 
 ##Other
 This final block is where you define the special character and a debug option. You will only be able to see debug output if you manually execute the commander.py file over SSH. The special character is the character you will use before your command to use Commander. For example:
-```[Other]
+```
+[Other]
 Character: !
 Debug: off
 ```
