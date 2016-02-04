@@ -29,14 +29,13 @@ class Commander extends Module
 
     private function startCommander()
     {
-        $this->execBackground('python /pineapple/modules/Commander/Python/commander.py');
+        $this->execBackground('cd /pineapple/modules/Commander/Python && python commander.py');
         $this->response = array("success" => true);
     }
 
     private function stopCommander()
     {
-        $getPid = exec('pgrep -f commander');
-        exec('kill -9 $getPid');
+        exec('kill -9 $(pgrep -f commander)');
         $this->response = array("success" => true);
     }
 
