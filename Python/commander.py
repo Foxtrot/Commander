@@ -4,6 +4,8 @@
 Commander.py - Python Backend for the WiFi Pineapple Commander module.
 Version 2 Codename: Electric Boogaloo
 
+Thanks to: sebkinne & tesla
+
 Foxtrot (C) 2016 <foxtrotnull@gmail.com>
 """
 
@@ -13,11 +15,18 @@ import sys
 import socket
 import time
 import string
+import select
+import errno
 
 class Commander(object):
-	def __init__(self):
-		print "[*] WiFi Pineapple Commander Module"
+	print "[*] WiFi Pineapple Commander Module"
+	
+	def run(self):
+		while True:
+			self.fillBuffer()
+			self.parseCommands()
 
+	def parseConfig(self):
 		if os.path.exists('commander.conf'):
 			self.config = ConfigParser.RawConfigParser()
 			self.config.read('commander.conf')
@@ -28,31 +37,31 @@ class Commander(object):
 				print "[!] No valid configuration file found... Exiting!"
 				sys.exit(1)
 
-			self.server = self.config.get('Network', 'Server')
-			self.port = self.config.getint('Network', 'Port')
-			self.nick = self.config.get('Network', 'Nickname')
-			self.channel = self.config.get('Network', 'Channel')
-			self.master = self.config.get('Security', 'Master')
-			self.trigger = self.config.get('Security', 'Trigger')
-			self.commands = self.config.options('Commands')
-			self.debugmode = self.config.get('Other', 'Debug')
+		self.server = self.config.get('Network', 'Server')
+		self.port = self.config.getint('Network', 'Port')
+		self.nick = self.config.get('Network', 'Nickname')
+		self.channel = self.config.get('Network', 'Channel')
+		self.master = self.config.get('Security', 'Master')
+		self.trigger = self.config.get('Security', 'Trigger')
+		self.commands = self.config.options('Commands')
+		self.debugmode = self.config.get('Other', 'Debug')
 
-			print "[*] Using the following connection settings:"
-			print "    %s" % self.server
-			print "    %d" % self.port
-			print "    %s" % self.nick
-			print "    %s" % self.channel
-			print ""
+	def printConfig(self):
+		print "[*] Using the following connection settings:"
+		print "    %s" % self.server
+		print "    %d" % self.port
+		print "    %s" % self.nick
+		print "    %s" % self.channel
+		print ""
 
-			print "[*] Using the following security settings:"
-			print "    Master: %s" % self.master
-			print "    Trigger: %s" % self.trigger
-			print ""
+		print "[*] Using the following security settings:"
+		print "    Master: %s" % self.master
+		print "    Trigger: %s\n" % self.trigger
 
-			print "[*] Listing commands:"
-			for self.command in self.commands:
-				print "    %s%s" % (self.trigger, self.command)
-			print ""
+		print "[*] Listing commands:"
+		for command in self.commands:
+			print "    %s%s" % (self.trigger, command)
+		print ""
 
 	def connect(self):
 		self.sock = socket.socket()
@@ -61,23 +70,49 @@ class Commander(object):
 		print "[*] Sending nick and user information"
 		self.sock.send('NICK %s\r\n' % self.nick)
 		self.sock.send('USER %s 8 * :%s\r\n' % (self.nick, self.nick))
-		time.sleep(5)
+		time.sleep(2)
 		self.sock.send('JOIN %s\r\n' % self.channel)
 		self.sock.send('PRIVMSG %s :Connected.\r\n' % self.channel)
-		print "[*] Connected!"
-		print ""
+		print "[*] Connected!\n"
 
-		while True:
-			self.buff = self.sock.recv(2048)
+	def fillBuffer(self):
+		self.buff = ""
+		self.sock.setblocking(0)
 
-			if self.debugmode == "on":
-				print self.buff
+		readable, _, _ = select.select([self.sock], [], [])
+		
+		if self.sock in readable:
+			self.buff = ""
+			cont = True
+			while cont:
+				try:
+					self.buff += self.sock.recv(1024)
+				except socket.error,e:
+					if e.errno != errno.EWOULDBLOCK:
+						sys.exit(1)
+					cont = False
 
-			if self.buff.find('PING') != -1:
-				print "[*] Replying to ping from server"
-				self.sock.send('PONG ' + self.buff.split() [1] + '\r\n')
+	def parseCommands(self):
+		for line in self.buff.split('\r\n'):
+			
+			line = line.split()
+
+			if 'PING' in line:
+				print "[*] Replying to ping\n"
+				self.sock.send('PONG ' + line.split()[1] + '\r\n')
+
+			for command in self.commands:
+				if ":" + self.trigger + command in line:
+					print "[*] Found command %s%s\n" % (self.trigger, command)
+					self.sock.send('PRIVMSG %s :Executing command %s\r\n' % (self.channel, command))
+					cmd = self.config.get('Commands', command)
+					os.system(cmd)
+
 
 
 if __name__ == '__main__':
 	commander = Commander()
+	commander.parseConfig()
+	commander.printConfig()
 	commander.connect()
+	commander.run()
