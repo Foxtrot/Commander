@@ -2,97 +2,57 @@
 
 """
 Commander.py - Python Backend for the WiFi Pineapple Commander module.
+Version 2 Codename: Electric Boogaloo
 
 Foxtrot (C) 2016 <foxtrotnull@gmail.com>
 """
 
-import ConfigParser
 import os
+import ConfigParser
 import sys
 import socket
-import string
-import time
 
-class Commander:
-	print "[*] WiFi Pineapple Commander"
-	print "[*] Looking for Commander.conf..."
-	if os.path.exists('commander.conf'):
-		print "[*] Found configuration file!"
-		print " "
-		config = ConfigParser.RawConfigParser()
-		config.read('commander.conf')
-		if config.has_section('Network') & config.has_section('Commands') & config.has_section('Other'):
-			print "[*] Valid configuration file... proceeding"
-			print " "
-		else:
-			print "[!] Configuration is missing either Network, Command or Other block."
-			sys.exit(1)
-	else:
-		print "[!] Could not find configuration file! Exiting..."
-		sys.exit(1)
+class Commander(object):
+	def __init__(self):
+		print "[*] WiFi Pineapple Commander Module"
 
+		if os.path.exists('commander.conf'):
+			self.config = ConfigParser.RawConfigParser()
+			self.config.read('commander.conf')
+			if self.config.has_section('Network') and self.config.has_section('Security') and self.config.has_section('Commands') and self.config.has_section('Other'):
+				print "[*] Valid configuration file found!"
+				print ""
+			else:
+				print "[!] No valid configuration file found... Exiting!"
+				sys.exit(1)
 
-class Commands(Commander):
-	def availableCommands():
-		print "[*] Listing commands..."
-		
-		character = Commander.config.get('Other', 'Character')
+			self.server = self.config.get('Network', 'Server')
+			self.port = self.config.getint('Network', 'Port')
+			self.nick = self.config.get('Network', 'Nickname')
+			self.channel = self.config.get('Network', 'Channel')
+			self.master = self.config.get('Security', 'Master')
+			self.trigger = self.config.get('Security', 'Trigger')
+			self.commands = self.config.options('Commands')
+			self.debugmode = self.config.get('Other', 'Debug')
 
-		commands = Commander.config.options('Commands')
-		for command in commands:
-			print "    %s%s" % (character, command)
+			print "[*] Using the following connection settings:"
+			print "    %s" % self.server
+			print "    %d" % self.port
+			print "    %s" % self.nick
+			print "    %s" % self.channel
+			print ""
 
-		print " "
+			print "[*] Using the following security settings:"
+			print "    Master: %s" % self.master
+			print "    Trigger: %s" % self.trigger
+			print ""
 
-	availableCommands()
-
-
-class Client(Commander, Commands):
-	def connect():		
-		server = Commander.config.get('Network', 'Server')
-		port = Commander.config.getint('Network', 'Port')
-		nickname = Commander.config.get('Network', 'Nickname')
-		channel = Commander.config.get('Network', 'Channel')
-
-		print "[*] Using these connection settings! :"
-		print "    Server: " + server
-		print "    Port: " + str(port)
-		print "    Nickname: " + nickname
-		print "    Channel: " + channel
-		print " "
-
-		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		print "[*] Connecting!"
-		sock.connect((server, port))
-
-		print "[*] Sending nickname and joining " + channel
-		sock.send("NICK %s\r\n" % nickname)
-		sock.send("USER %s 8 * :%s\r\n" % (nickname, nickname))
-		time.sleep(5)
-		sock.send("JOIN %s\r\n" % channel)
-		sock.send("PRIVMSG %s :Connected!\r\n" % channel)
-		print "[*] Connected!"
-		print " "
-
-		while True:
-			buff = sock.recv(2048)
-			debugMode = Commander.config.get('Other', 'Debug')
-			if debugMode == "on":
-				print "[*] Debug mode is on! Printing buffer..."
-				print buff
-
-			if buff.find('PING') != -1:
-				print "[*] Replying to ping from server"
-				sock.send('PONG ' + buff.split() [1] + '\r\n')
-
-			character = Commander.config.get('Other', 'Character')
-			commands = Commander.config.options('Commands')
-			for command in commands:
-				if buff.find(character+command) != -1:
-					print "[*] Executing command %s" % command
-					sock.send("PRIVMSG %s :Executing command %s\r\n" % (channel, command))
-					cmd = Commander.config.get('Commands', command)
-					os.system(cmd)
+			print "[*] Listing commands:"
+			for self.command in self.commands:
+				print "    %s%s" % (self.trigger, self.command)
 
 
-	connect()
+
+if __name__ == '__main__':
+	commander = Commander()
+	commander
