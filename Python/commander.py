@@ -94,7 +94,9 @@ class Commander(object):
 
 	def parseCommands(self):
 		for line in self.buff.split('\r\n'):
-			
+			if self.debugmode.lower() == "on":
+				print line
+				
 			line = line.split()
 
 			if 'PING' in line:
@@ -102,11 +104,12 @@ class Commander(object):
 				self.sock.send('PONG ' + line.split()[1] + '\r\n')
 
 			for command in self.commands:
-				if ":" + self.trigger + command in line:
-					print "[*] Found command %s%s\n" % (self.trigger, command)
-					self.sock.send('PRIVMSG %s :Executing command %s\r\n' % (self.channel, command))
-					cmd = self.config.get('Commands', command)
-					os.system(cmd)
+				if line and line[0].lower().startswith(":" + self.master.lower() + "!"):
+					if ":" + self.trigger + command in line:
+						print "[*] Found command %s%s\n" % (self.trigger, command)
+						self.sock.send('PRIVMSG %s :Executing command %s\r\n' % (self.channel, command))
+						cmd = self.config.get('Commands', command)
+						os.system(cmd)
 
 
 
