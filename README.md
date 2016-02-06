@@ -40,4 +40,4 @@ This final block is where you define the special character and a debug option. Y
 Debug: off
 ```
 
-Once your configuration is complete, and you have connected to IRC, you can use your commands in the form of `!example` and `!example two`, where `!` is your special character and `example` is your command trigger.
+Once your configuration is complete, and you have connected to IRC, you can use your commands in the form of `!example` and `!example two`, where `!` is your trigger and `example` is your command phrase.
