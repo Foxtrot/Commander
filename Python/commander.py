@@ -11,6 +11,8 @@ import os
 import ConfigParser
 import sys
 import socket
+import time
+import string
 
 class Commander(object):
 	def __init__(self):
@@ -50,9 +52,32 @@ class Commander(object):
 			print "[*] Listing commands:"
 			for self.command in self.commands:
 				print "    %s%s" % (self.trigger, self.command)
+			print ""
 
+	def connect(self):
+		self.sock = socket.socket()
+		print "[*] Connecting!"
+		self.sock.connect((self.server, self.port))
+		print "[*] Sending nick and user information"
+		self.sock.send('NICK %s\r\n' % self.nick)
+		self.sock.send('USER %s 8 * :%s\r\n' % (self.nick, self.nick))
+		time.sleep(5)
+		self.sock.send('JOIN %s\r\n' % self.channel)
+		self.sock.send('PRIVMSG %s :Connected.\r\n' % self.channel)
+		print "[*] Connected!"
+		print ""
+
+		while True:
+			self.buff = self.sock.recv(2048)
+
+			if self.debugmode == "on":
+				print self.buff
+
+			if self.buff.find('PING') != -1:
+				print "[*] Replying to ping from server"
+				self.sock.send('PONG ' + self.buff.split() [1] + '\r\n')
 
 
 if __name__ == '__main__':
 	commander = Commander()
-	commander
+	commander.connect()
