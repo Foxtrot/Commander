@@ -70,7 +70,7 @@ class Commander(object):
 		print "[*] Sending nick and user information"
 		self.sock.send('NICK %s\r\n' % self.nick)
 		self.sock.send('USER %s 8 * :%s\r\n' % (self.nick, self.nick))
-		time.sleep(2)
+		time.sleep(10)
 		self.sock.send('JOIN %s\r\n' % self.channel)
 		self.sock.send('PRIVMSG %s :Connected.\r\n' % self.channel)
 		print "[*] Connected!\n"
